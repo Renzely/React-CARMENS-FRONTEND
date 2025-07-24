@@ -1,0 +1,359 @@
+import * as React from "react";
+import {
+  Container,
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Grid,
+  IconButton,
+  InputAdornment,
+} from "@mui/material";
+import CssBaseline from "@mui/material/CssBaseline";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import axios from "axios";
+import Swal from "sweetalert2";
+import logo from "./MARABOU_nobg.png";
+import backgroundImage from "./notxt_CB.png";
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#000000",
+    },
+    background: {
+      default: "#000000",
+    },
+  },
+  typography: {
+    fontFamily: "'Poppins', sans-serif",
+  },
+});
+
+export default function ForgotPassword() {
+  const [step, setStep] = React.useState("email"); // "email", "otp", "reset"
+  const [otpCode, setOtpCode] = React.useState("");
+  const [verifyOtpCode, setVerifyOtpCode] = React.useState("");
+  const [resetEmail, setResetEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [confirmPassword, setConfirmPassword] = React.useState("");
+  const [passwordError, setPasswordError] = React.useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleMouseDownPassword = (event) => event.preventDefault();
+
+  const handleSubmitEmail = async (event) => {
+    event.preventDefault();
+    const emailAddress = event.currentTarget.email.value;
+
+    if (!emailAddress) {
+      Swal.fire("Unable to Proceed", "Please input your email", "warning");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "https://api-carmens-best.bmphrc.com/send-otp-forgotpassword",
+        { emailAddress: emailAddress }
+      );
+      const res = response.data;
+      if (res.status === 200) {
+        setVerifyOtpCode(res.code);
+        setResetEmail(res.emailAddress);
+        setStep("otp");
+      } else {
+        Swal.fire("Error!", res.data, "error");
+      }
+    } catch {
+      Swal.fire("Error!", "Something went wrong", "error");
+    }
+  };
+
+  const handleSubmitOtp = (event) => {
+    event.preventDefault();
+    if (otpCode === verifyOtpCode) {
+      setStep("reset");
+    } else {
+      Swal.fire("Unable to Proceed", "Code does not match", "warning");
+    }
+  };
+
+  const handleSubmitResetPassword = async (event) => {
+    event.preventDefault();
+
+    if (passwordError || confirmPasswordError) {
+      Swal.fire({
+        title: "Unable to Proceed",
+        text: "Please input a valid password",
+        icon: "warning",
+      });
+      return;
+    }
+
+    const body = {
+      emailAddress: resetEmail,
+      password: password,
+    };
+
+    axios
+      .put("https://api-carmens-best.bmphrc.com/forgot-password-reset", body)
+      .then(async (response) => {
+        const res = await response.data;
+        if (res.status === 200) {
+          Swal.fire({
+            title: "Password reset success!",
+            text: "You can now login with your new password",
+            icon: "success",
+            confirmButtonColor: "#3085d6",
+          }).then(() => {
+            window.location.href = "/";
+          });
+        } else {
+          Swal.fire({
+            title: "Error!",
+            text: res.data,
+            icon: "error",
+          });
+        }
+      })
+      .catch(() => {
+        Swal.fire({
+          title: "Error!",
+          text: "Something wrong occurred",
+          icon: "error",
+        });
+      });
+  };
+
+  return (
+    <ThemeProvider theme={theme}>
+      <Grid
+        container
+        sx={{
+          height: "100vh",
+          background:
+            "linear-gradient(135deg, #664229, #987554, #B99976, #5C3428)", // Three-color gradient background
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 2,
+        }}
+      >
+        <CssBaseline />
+        <Box
+          sx={{
+            display: "flex",
+            width: { xs: "90%", sm: "80%", md: "70%" },
+            height: { xs: "90%", sm: "75%", md: "65%" },
+            borderRadius: 5,
+            overflow: "hidden",
+            boxShadow: 10,
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+          }}
+        >
+          <Grid
+            item
+            xs={false} // Hides this on extra-small screens (mobile)
+            sm={6} // Shows this on small screens and above
+            sx={{
+              backgroundImage: `url(${backgroundImage})`,
+              backgroundSize: "100% 100%",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "center",
+              minHeight: "100%",
+              display: { xs: "none", sm: "block" }, // Hide on mobile, show on larger screens
+            }}
+          />
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 4,
+            }}
+          >
+            <Container maxWidth="xs">
+              <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+                <img src={logo} alt="Logo" style={{ width: "80px" }} />
+              </Box>
+              <Typography
+                component="h1"
+                variant="h5"
+                fontWeight="bold"
+                color="#5C3428"
+                align="center"
+                mb={2}
+              >
+                {step === "email" && "FORGOT PASSWORD"}
+                {step === "otp" && "ENTER OTP CODE"}
+                {step === "reset" && "RESET PASSWORD"}
+              </Typography>
+              {step === "email" && (
+                <Box component="form" onSubmit={handleSubmitEmail}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="email"
+                    label="Email Address"
+                    name="email"
+                    autoFocus
+                  />
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      mt: 3,
+                      mb: 2,
+                      backgroundColor: "#987554",
+                      fontWeight: "bold",
+                      "&:hover": {
+                        backgroundColor: "#5C3428",
+                      },
+                    }}
+                  >
+                    Send OTP CODE
+                  </Button>
+                  {/* Cancel Button */}
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    sx={{
+                      mt: 1,
+                      mb: 2,
+                      color: "#987554",
+                      borderColor: "#987554",
+                      fontWeight: "bold",
+                      "&:hover": {
+                        backgroundColor: "#664229",
+                        borderColor: "#5C3428",
+                        color: "#ffffff",
+                      },
+                    }}
+                    onClick={() => (window.location.href = "/")}
+                  >
+                    Cancel
+                  </Button>
+                </Box>
+              )}
+
+              {step === "otp" && (
+                <Box component="form" onSubmit={handleSubmitOtp}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    label="Enter OTP"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value)}
+                  />
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      mt: 3,
+                      mb: 2,
+                      backgroundColor: "#987554",
+                      fontWeight: "bold",
+                      "&:hover": {
+                        backgroundColor: "#5C3428",
+                      },
+                    }}
+                  >
+                    Confirm Code
+                  </Button>
+                  {/* Cancel Button */}
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    sx={{
+                      mt: 1,
+                      mb: 2,
+                      color: "#987554",
+                      borderColor: "#987554",
+                      fontWeight: "bold",
+                      "&:hover": {
+                        backgroundColor: "#664229",
+                        borderColor: "#5C3428",
+                        color: "#ffffff",
+                      },
+                    }}
+                    onClick={() => (window.location.href = "/")}
+                  >
+                    Cancel
+                  </Button>
+                </Box>
+              )}
+
+              {step === "reset" && (
+                <Box component="form" onSubmit={handleSubmitResetPassword}>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    label="New Password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    label="Confirm Password"
+                    type={showPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      mt: 3,
+                      mb: 2,
+                      backgroundColor: "#987554",
+                      fontWeight: "bold",
+                      "&:hover": {
+                        backgroundColor: "#5C3428",
+                      },
+                    }}
+                  >
+                    Reset Password
+                  </Button>
+                  {/* Cancel Button */}
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    sx={{
+                      mt: 1,
+                      mb: 2,
+                      color: "#987554",
+                      borderColor: "#987554",
+                      fontWeight: "bold",
+                      "&:hover": {
+                        backgroundColor: "#664229",
+                        borderColor: "#5C3428",
+                        color: "#ffffff",
+                      },
+                    }}
+                    onClick={() => (window.location.href = "/")}
+                  >
+                    Cancel
+                  </Button>
+                </Box>
+              )}
+            </Container>
+          </Grid>
+        </Box>
+      </Grid>
+    </ThemeProvider>
+  );
+}
