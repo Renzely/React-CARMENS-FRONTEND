@@ -141,7 +141,7 @@
 
 //     try {
 //       const response = await axios.get(
-//         "https://api-carmens-best.bmphrc.com/attendance/status",
+//         "http://192.168.50.58:3001/attendance/status",
 //         {
 //           params: {
 //             email: email,
@@ -190,7 +190,7 @@
 //     try {
 //       // Fetch the users' data
 //       const response = await axios.post(
-//         "https://api-carmens-best.bmphrc.com/get-all-user",
+//         "http://192.168.50.58:3001/get-all-user",
 //         body
 //       );
 //       const data = response.data.data;
@@ -262,7 +262,7 @@
 //             // Get the actual timestamp to compare
 //             try {
 //               const response = await axios.get(
-//                 "https://api-carmens-best.bmphrc.com/attendance/status",
+//                 "http://192.168.50.58:3001/attendance/status",
 //                 {
 //                   params: {
 //                     email: user.email,

@@ -107,14 +107,14 @@ export default function Sidebar() {
           </li>
         </NavLink>
 
-        <NavLink
+        {/* <NavLink
           to="/view-Expiry"
           onClick={() => handleItemClick("/view-Expiry")}
         >
           <li className={activeItem === "/view-Expiry" ? "active" : ""}>
             <AutoDeleteIcon className="sidebar-icon" /> {isOpen && "Expiry"}
           </li>
-        </NavLink>
+        </NavLink> */}
         {/* <NavLink
           to="/view-outletinputs"
           onClick={() => handleItemClick("/view-outletinputs")}
