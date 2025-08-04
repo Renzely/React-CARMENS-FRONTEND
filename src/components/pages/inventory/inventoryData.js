@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const style = {
   position: "absolute",
@@ -70,6 +71,83 @@ export default function Inventory() {
     const selectedDate = year + "-" + month + "-" + day;
     console.log(selectedDate);
     getDate(selectedDate);
+  };
+
+  const ExpiryCell = ({ value }) => {
+    const [open, setOpen] = React.useState(false);
+    const expiry = value || [];
+
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+
+    const isDisabled = expiry.length === 0;
+
+    return (
+      <>
+        <Stack>
+          <Button
+            variant="contained"
+            size="small"
+            color="primary"
+            disabled={isDisabled}
+            onClick={handleOpen}
+            style={{
+              width: "50%",
+              marginTop: "13px",
+              backgroundColor: isDisabled ? "#d3d3d3" : "#987554",
+              color: "#FFFFFF",
+            }}
+          >
+            <VisibilityIcon fontSize="small" />
+          </Button>
+        </Stack>
+
+        <Modal open={open} onClose={handleClose}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 400,
+              bgcolor: "background.paper",
+              borderRadius: 2,
+              boxShadow: 24,
+              p: 3,
+              maxHeight: "80vh",
+              overflowY: "auto",
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              Expiry Dates
+            </Typography>
+
+            {expiry.length > 0 ? (
+              expiry.map((entry, index) => {
+                const formattedDate = entry.date
+                  ? new Date(entry.date).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : "Invalid Date";
+
+                return (
+                  <Typography
+                    key={index}
+                    sx={{ mb: index < expiry.length - 1 ? 1 : 0 }}
+                  >
+                    {formattedDate} — Qty: {entry.quantity}
+                  </Typography>
+                );
+              })
+            ) : (
+              <Typography>—</Typography>
+            )}
+          </Box>
+        </Modal>
+      </>
+    );
   };
 
   const columns = [
@@ -220,6 +298,15 @@ export default function Inventory() {
         );
       },
     },
+    {
+      field: "expiryDates",
+      headerName: "Expiry",
+      width: 150,
+      headerClassName: "bold-header",
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => <ExpiryCell value={params.value} />,
+    },
   ];
 
   // Helper function to format expiry
@@ -282,7 +369,6 @@ export default function Inventory() {
                 Array.isArray(sku.harvest) &&
                 sku.harvest.length > 0
               ) {
-                // For MVP with harvest data, create separate rows
                 sku.harvest.forEach((harvestEntry) => {
                   pushSku(sku, "Carried", {
                     category: versionKey,
@@ -296,10 +382,11 @@ export default function Inventory() {
                     oos: sku.oos ?? "—",
                     harvestDates: sku.harvest || [],
                     harvestQuantities: sku.harvest || [],
+                    expiryDates: sku.expiry || [], // ✅ NEW
+                    expiryQuantities: sku.expiry || [], // ✅ NEW
                   });
                 });
               } else {
-                // For other cases
                 pushSku(sku, "Carried", {
                   category: versionKey,
                   beginningPCS: sku.beginningPCS ?? 0,
@@ -311,6 +398,8 @@ export default function Inventory() {
                   inventoryDays: sku.inventoryDays ?? 0,
                   harvestDates: sku.harvest || [],
                   harvestQuantities: sku.harvest || [],
+                  expiryDates: sku.expiry || [], // ✅ NEW
+                  expiryQuantities: sku.expiry || [], // ✅ NEW
                 });
               }
             });
@@ -326,6 +415,8 @@ export default function Inventory() {
                 inventoryDays: "NC",
                 harvestDates: sku.harvest || [],
                 harvestQuantities: sku.harvest || [],
+                expiryDates: sku.expiry || [], // ✅ NEW
+                expiryQuantities: sku.expiry || [], // ✅ NEW
               })
             );
 
@@ -340,6 +431,8 @@ export default function Inventory() {
                 inventoryDays: "Delisted",
                 harvestDates: sku.harvest || [],
                 harvestQuantities: sku.harvest || [],
+                expiryDates: sku.expiry || [], // ✅ NEW
+                expiryQuantities: sku.expiry || [], // ✅ NEW
               })
             );
 
@@ -438,7 +531,6 @@ export default function Inventory() {
                 Array.isArray(sku.harvest) &&
                 sku.harvest.length > 0
               ) {
-                // MVP with harvest entries — each gets a separate row
                 sku.harvest.forEach((harvestEntry) => {
                   pushSku(sku, "Carried", {
                     category: versionKey,
@@ -449,12 +541,14 @@ export default function Inventory() {
                     endingPCS: "—",
                     offtake: "—",
                     inventoryDays: "—",
+                    oos: sku.oos ?? "—",
                     harvestDates: sku.harvest || [],
                     harvestQuantities: sku.harvest || [],
+                    expiryDates: sku.expiry || [], // ✅ NEW
+                    expiryQuantities: sku.expiry || [], // ✅ NEW
                   });
                 });
               } else {
-                // Non-MVP or MVP without harvest
                 pushSku(sku, "Carried", {
                   category: versionKey,
                   beginningPCS: sku.beginningPCS ?? 0,
@@ -462,9 +556,12 @@ export default function Inventory() {
                   rtvPCS: sku.rtvPCS ?? 0,
                   endingPCS: sku.endingPCS ?? 0,
                   offtake: sku.offtake ?? 0,
+                  oos: sku.oos ?? 0,
                   inventoryDays: sku.inventoryDays ?? 0,
                   harvestDates: sku.harvest || [],
                   harvestQuantities: sku.harvest || [],
+                  expiryDates: sku.expiry || [], // ✅ NEW
+                  expiryQuantities: sku.expiry || [], // ✅ NEW
                 });
               }
             });
@@ -480,6 +577,8 @@ export default function Inventory() {
                 inventoryDays: "NC",
                 harvestDates: sku.harvest || [],
                 harvestQuantities: sku.harvest || [],
+                expiryDates: sku.expiry || [], // ✅ NEW
+                expiryQuantities: sku.expiry || [], // ✅ NEW
               })
             );
 
@@ -494,6 +593,8 @@ export default function Inventory() {
                 inventoryDays: "Delisted",
                 harvestDates: sku.harvest || [],
                 harvestQuantities: sku.harvest || [],
+                expiryDates: sku.expiry || [], // ✅ NEW
+                expiryQuantities: sku.expiry || [], // ✅ NEW
               })
             );
 
@@ -547,6 +648,8 @@ export default function Inventory() {
         "OOS",
         "Harvest Dates",
         "Harvest Quantities",
+        "Expiration Dates",
+        "Expiration Quantities",
       ];
 
       let rowCount = 1;
@@ -554,58 +657,56 @@ export default function Inventory() {
 
       response.data.data.forEach((item) => {
         const harvestArray = Array.isArray(item.harvest) ? item.harvest : [];
+        const expiryArray = Array.isArray(item.expiry) ? item.expiry : [];
 
-        if (harvestArray.length === 0) {
-          // No harvest, add a blank row
-          newData.push({
-            "#": rowCount++,
-            Date: item.date,
-            Fullname: item.fullname,
-            Outlet: item.outlet,
-            Category: item.category || "",
-            SKU: item.sku,
-            "BAR CODE": item.code,
-            Status: item.status,
-            Beginning: item.beginning,
-            Delivery: item.delivery,
-            RTV: item.RTV,
-            Ending: item.ending,
-            Offtake: item.offtake,
-            OOS: item.oos || "",
-            "Harvest Dates": "",
-            "Harvest Quantities": "",
-          });
-        } else {
-          // One row per harvest entry
-          harvestArray.forEach((harvestEntry) => {
-            const formattedDate = new Date(
-              harvestEntry.date
-            ).toLocaleDateString("en-US", {
+        // Format harvest data into multi-line strings
+        const harvestDates = harvestArray
+          .map((h) =>
+            new Date(h.date).toLocaleDateString("en-US", {
               year: "numeric",
               month: "long",
               day: "numeric",
-            });
+            })
+          )
+          .join("\n");
 
-            newData.push({
-              "#": rowCount++,
-              Date: item.date,
-              Fullname: item.fullname,
-              Outlet: item.outlet,
-              Category: item.category || "",
-              SKU: item.sku,
-              "BAR CODE": item.code,
-              Status: item.status,
-              Beginning: item.beginning,
-              Delivery: item.delivery,
-              RTV: item.RTV,
-              Ending: item.ending,
-              Offtake: item.offtake,
-              OOS: item.oos || "",
-              "Harvest Dates": formattedDate,
-              "Harvest Quantities": harvestEntry.quantity,
-            });
-          });
-        }
+        const harvestQuantities = harvestArray
+          .map((h) => h.quantity)
+          .join("\n");
+
+        // Format expiry data into multi-line strings
+        const expiryDates = expiryArray
+          .map((e) =>
+            new Date(e.date).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          )
+          .join("\n");
+
+        const expiryQuantities = expiryArray.map((e) => e.quantity).join("\n");
+
+        newData.push({
+          "#": rowCount++,
+          Date: item.date,
+          Fullname: item.fullname,
+          Outlet: item.outlet,
+          Category: item.category || "",
+          SKU: item.sku,
+          "BAR CODE": item.code,
+          Status: item.status,
+          Beginning: item.beginning,
+          Delivery: item.delivery,
+          RTV: item.RTV,
+          Ending: item.ending,
+          Offtake: item.offtake,
+          OOS: item.oos || "",
+          "Harvest Dates": harvestDates,
+          "Harvest Quantities": harvestQuantities,
+          "Expiration Dates": expiryDates,
+          "Expiration Quantities": expiryQuantities,
+        });
       });
 
       // Generate XLSX file
@@ -662,7 +763,9 @@ export default function Inventory() {
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      alert(`Successfully exported ${newData.length} expiry records!`);
+
+      alert(`Successfully exported ${newData.length} inventory records!`);
+
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.download = `INVENTORY_DATA_CARMENS-BEST_${

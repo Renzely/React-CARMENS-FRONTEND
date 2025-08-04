@@ -86,7 +86,7 @@
 
 //     try {
 //       const response = await axios.get(
-//         "https://api-carmens-best.bmphrc.com/attendance/status",
+//         "http://192.168.50.58:3001/attendance/status",
 //         {
 //           params: {
 //             email: email,
@@ -138,7 +138,7 @@
 //       };
 
 //       const response = await axios.post(
-//         "https://api-carmens-best.bmphrc.com/get-attendance",
+//         "http://192.168.50.58:3001/get-attendance",
 //         requestBody
 //       );
 
@@ -484,7 +484,7 @@
 //     try {
 //       // Fetch all users
 //       const userRes = await axios.post(
-//         "https://api-carmens-best.bmphrc.com/get-all-user",
+//         "http://192.168.50.58:3001/get-all-user",
 //         {}
 //       );
 //       const users = userRes.data.data;
@@ -501,7 +501,7 @@
 
 //       // Fetch attendance data
 //       const attendanceRes = await axios.post(
-//         "https://api-carmens-best.bmphrc.com/get-attendance",
+//         "http://192.168.50.58:3001/get-attendance",
 //         {
 //           email,
 //           startDate: startDateStr,
