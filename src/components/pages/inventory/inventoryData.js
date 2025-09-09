@@ -75,11 +75,7 @@ export default function Inventory() {
 
   const ExpiryCell = ({ value }) => {
     const [open, setOpen] = React.useState(false);
-    const expiry = value || [];
-
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
-
+    const expiry = cleanDateQty(value);
     const isDisabled = expiry.length === 0;
 
     return (
@@ -90,7 +86,7 @@ export default function Inventory() {
             size="small"
             color="primary"
             disabled={isDisabled}
-            onClick={handleOpen}
+            onClick={() => setOpen(true)}
             style={{
               width: "50%",
               marginTop: "13px",
@@ -102,7 +98,7 @@ export default function Inventory() {
           </Button>
         </Stack>
 
-        <Modal open={open} onClose={handleClose}>
+        <Modal open={open} onClose={() => setOpen(false)}>
           <Box
             sx={{
               position: "absolute",
@@ -123,24 +119,16 @@ export default function Inventory() {
             </Typography>
 
             {expiry.length > 0 ? (
-              expiry.map((entry, index) => {
-                const formattedDate = entry.date
-                  ? new Date(entry.date).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })
-                  : "Invalid Date";
-
-                return (
-                  <Typography
-                    key={index}
-                    sx={{ mb: index < expiry.length - 1 ? 1 : 0 }}
-                  >
-                    {formattedDate} — Qty: {entry.quantity}
-                  </Typography>
-                );
-              })
+              expiry.map((entry, i) => (
+                <Typography key={i} sx={{ mb: i < expiry.length - 1 ? 1 : 0 }}>
+                  {new Date(entry.date).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}{" "}
+                  — Qty: {entry.quantity}
+                </Typography>
+              ))
             ) : (
               <Typography>—</Typography>
             )}
@@ -149,6 +137,21 @@ export default function Inventory() {
       </>
     );
   };
+
+  // ---- helpers ----
+  const isValidDate = (d) => !!d && !isNaN(new Date(d).getTime());
+  const cleanDateQty = (arr) =>
+    Array.isArray(arr)
+      ? arr.filter(
+          (e) =>
+            isValidDate(e?.date) &&
+            e?.quantity !== "" &&
+            e?.quantity !== null &&
+            e?.quantity !== undefined
+        )
+      : [];
+  const normalizeOOS = (v) =>
+    v === undefined || v === null || v === "" || v === 0 ? "" : v;
 
   const columns = [
     {
@@ -214,9 +217,21 @@ export default function Inventory() {
       headerClassName: "bold-header",
     },
     {
+      field: "rtvNo",
+      headerName: "RTV No.",
+      width: 150,
+      headerClassName: "bold-header",
+    },
+    {
       field: "rtvPCS",
       headerName: "RTV (PCS)",
       width: 150,
+      headerClassName: "bold-header",
+    },
+    {
+      field: "rtvReason",
+      headerName: "RTV Reason",
+      width: 250,
       headerClassName: "bold-header",
     },
     {
@@ -232,6 +247,12 @@ export default function Inventory() {
       headerClassName: "bold-header",
     },
     {
+      field: "avgOfftake",
+      headerName: "Avg. Offtake",
+      width: 150,
+      headerClassName: "bold-header",
+    },
+    {
       field: "oos",
       headerName: "OOS",
       width: 120,
@@ -244,21 +265,19 @@ export default function Inventory() {
       width: 200,
       headerClassName: "bold-header",
       renderCell: (params) => {
-        const harvest = params.value || [];
+        const harvest = cleanDateQty(params.value);
         return (
           <div style={{ whiteSpace: "pre-wrap" }}>
             {harvest.length > 0 ? (
-              harvest.map((entry, index) => {
-                const formattedDate = new Date(entry.date).toLocaleDateString(
-                  "en-US",
-                  {
+              harvest.map((entry, i) => (
+                <div key={i}>
+                  {new Date(entry.date).toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
-                  }
-                );
-                return <div key={index}>{formattedDate}</div>;
-              })
+                  })}
+                </div>
+              ))
             ) : (
               <div>—</div>
             )}
@@ -347,6 +366,7 @@ export default function Inventory() {
             if (!versionData) return [];
 
             const result = [];
+
             const pushSku = (sku, status, values = {}) => {
               result.push({
                 id: `${status.toLowerCase()}-${sku.skuCode}-${versionKey}-${
@@ -358,68 +378,76 @@ export default function Inventory() {
                 ...rest,
                 sku: sku.sku,
                 skuCode: sku.skuCode,
-                code: sku.code || "", // ✅ Added barcode support
+                code: sku.code || "",
                 ...values,
               });
             };
 
+            // Carried
             versionData.Carried?.forEach((sku) => {
-              if (
-                versionKey === "MVP" &&
-                Array.isArray(sku.harvest) &&
-                sku.harvest.length > 0
-              ) {
-                sku.harvest.forEach((harvestEntry) => {
-                  pushSku(sku, "Carried", {
-                    category: versionKey,
-                    code: "—",
-                    beginningPCS: "—",
-                    deliveryPCS: "—",
-                    rtvPCS: "—",
-                    endingPCS: "—",
-                    offtake: "—",
-                    inventoryDays: "—",
-                    oos: sku.oos ?? "—",
-                    harvestDates: sku.harvest || [],
-                    harvestQuantities: sku.harvest || [],
-                    expiryDates: sku.expiry || [], // ✅ NEW
-                    expiryQuantities: sku.expiry || [], // ✅ NEW
-                  });
+              const harvestClean = cleanDateQty(sku.harvest);
+              const expiryClean = cleanDateQty(sku.expiry);
+
+              if (versionKey === "MVP") {
+                pushSku(sku, "Carried", {
+                  category: versionKey,
+                  code: "—",
+                  beginningPCS: "—",
+                  deliveryPCS: "—",
+                  rtvNo: "—",
+                  rtvPCS: "—",
+                  rtvReason: "—",
+                  endingPCS: "—",
+                  offtake: "—",
+                  inventoryDays: "—",
+                  oos: normalizeOOS(sku.oos),
+                  harvestDates: harvestClean,
+                  harvestQuantities: harvestClean,
+                  expiryDates: expiryClean,
+                  expiryQuantities: expiryClean,
                 });
               } else {
                 pushSku(sku, "Carried", {
                   category: versionKey,
                   beginningPCS: sku.beginningPCS ?? 0,
                   deliveryPCS: sku.deliveryPCS ?? 0,
+                  rtvNo: sku.rtvNo ?? "",
                   rtvPCS: sku.rtvPCS ?? 0,
+                  rtvReason: sku.rtvReason ?? "",
                   endingPCS: sku.endingPCS ?? 0,
                   offtake: sku.offtake ?? 0,
-                  oos: sku.oos ?? 0,
+                  avgOfftake: sku.avgOfftake ?? "",
+                  oos: normalizeOOS(sku.oos),
                   inventoryDays: sku.inventoryDays ?? 0,
-                  harvestDates: sku.harvest || [],
-                  harvestQuantities: sku.harvest || [],
-                  expiryDates: sku.expiry || [], // ✅ NEW
-                  expiryQuantities: sku.expiry || [], // ✅ NEW
+                  harvestDates: harvestClean,
+                  harvestQuantities: harvestClean,
+                  expiryDates: expiryClean,
+                  expiryQuantities: expiryClean,
                 });
               }
             });
 
+            // Not Carried
             versionData["Not Carried"]?.forEach((sku) =>
               pushSku(sku, "Not Carried", {
                 category: versionKey,
                 beginningPCS: "NC",
                 deliveryPCS: "NC",
+                rtvNo: "NC",
                 rtvPCS: "NC",
+                rtvReason: "NC",
                 endingPCS: "NC",
                 offtake: "NC",
+                avgOfftake: "NC",
                 inventoryDays: "NC",
-                harvestDates: sku.harvest || [],
-                harvestQuantities: sku.harvest || [],
-                expiryDates: sku.expiry || [], // ✅ NEW
-                expiryQuantities: sku.expiry || [], // ✅ NEW
+                harvestDates: [],
+                harvestQuantities: [],
+                expiryDates: [],
+                expiryQuantities: [],
               })
             );
 
+            // Delisted
             versionData.Delisted?.forEach((sku) =>
               pushSku(sku, "Delisted", {
                 category: versionKey,
@@ -429,10 +457,10 @@ export default function Inventory() {
                 endingPCS: "Delisted",
                 offtake: "Delisted",
                 inventoryDays: "Delisted",
-                harvestDates: sku.harvest || [],
-                harvestQuantities: sku.harvest || [],
-                expiryDates: sku.expiry || [], // ✅ NEW
-                expiryQuantities: sku.expiry || [], // ✅ NEW
+                harvestDates: [],
+                harvestQuantities: [],
+                expiryDates: [],
+                expiryQuantities: [],
               })
             );
 
@@ -440,18 +468,6 @@ export default function Inventory() {
           }
         );
       });
-
-      console.log(
-        "Final data with counts:",
-        newData.map((item) => ({
-          id: item.id,
-          count: item.count,
-          sku: item.sku,
-          status: item.status,
-          code: item.code, // ✅ Check barcode in log
-          harvest: item.harvest,
-        }))
-      );
 
       setUserData(newData);
     } catch (error) {
@@ -540,28 +556,53 @@ export default function Inventory() {
                     rtvPCS: "—",
                     endingPCS: "—",
                     offtake: "—",
+                    avgOfftake: sku.avgOfftake ?? "—", // ✅ use backend-provided avg
                     inventoryDays: "—",
-                    oos: sku.oos ?? "—",
+                    oos:
+                      sku.oos === "" || sku.oos == null
+                        ? "" // ✅ stay blank
+                        : sku.oos,
                     harvestDates: sku.harvest || [],
                     harvestQuantities: sku.harvest || [],
-                    expiryDates: sku.expiry || [], // ✅ NEW
-                    expiryQuantities: sku.expiry || [], // ✅ NEW
+                    expiryDates: sku.expiry || [],
+                    expiryQuantities: sku.expiry || [],
                   });
                 });
               } else {
                 pushSku(sku, "Carried", {
                   category: versionKey,
-                  beginningPCS: sku.beginningPCS ?? 0,
-                  deliveryPCS: sku.deliveryPCS ?? 0,
-                  rtvPCS: sku.rtvPCS ?? 0,
-                  endingPCS: sku.endingPCS ?? 0,
-                  offtake: sku.offtake ?? 0,
-                  oos: sku.oos ?? 0,
-                  inventoryDays: sku.inventoryDays ?? 0,
+                  beginningPCS:
+                    sku.beginningPCS === "" || sku.beginningPCS == null
+                      ? ""
+                      : sku.beginningPCS,
+                  deliveryPCS:
+                    sku.deliveryPCS === "" || sku.deliveryPCS == null
+                      ? ""
+                      : sku.deliveryPCS,
+                  rtvPCS:
+                    sku.rtvPCS === "" || sku.rtvPCS == null ? "" : sku.rtvPCS,
+                  endingPCS:
+                    sku.endingPCS === "" || sku.endingPCS == null
+                      ? ""
+                      : sku.endingPCS,
+                  offtake:
+                    sku.offtake === "" || sku.offtake == null
+                      ? ""
+                      : sku.offtake,
+                  avgOfftake: sku.avgOfftake ?? "—", // ✅ use backend value
+                  oos:
+                    sku.oos === "" || sku.oos == null || sku.oos === 0
+                      ? ""
+                      : sku.oos,
+
+                  inventoryDays:
+                    sku.inventoryDays === "" || sku.inventoryDays == null
+                      ? ""
+                      : sku.inventoryDays,
                   harvestDates: sku.harvest || [],
                   harvestQuantities: sku.harvest || [],
-                  expiryDates: sku.expiry || [], // ✅ NEW
-                  expiryQuantities: sku.expiry || [], // ✅ NEW
+                  expiryDates: sku.expiry || [],
+                  expiryQuantities: sku.expiry || [],
                 });
               }
             });
@@ -571,14 +612,18 @@ export default function Inventory() {
                 category: versionKey,
                 beginningPCS: "NC",
                 deliveryPCS: "NC",
+                rtvNo: "NC",
                 rtvPCS: "NC",
+                rtvReason: "NC",
                 endingPCS: "NC",
                 offtake: "NC",
+                avgOfftake: "NC",
                 inventoryDays: "NC",
+                oos: "", // ✅ blank for NC
                 harvestDates: sku.harvest || [],
                 harvestQuantities: sku.harvest || [],
-                expiryDates: sku.expiry || [], // ✅ NEW
-                expiryQuantities: sku.expiry || [], // ✅ NEW
+                expiryDates: sku.expiry || [],
+                expiryQuantities: sku.expiry || [],
               })
             );
 
@@ -590,11 +635,13 @@ export default function Inventory() {
                 rtvPCS: "Delisted",
                 endingPCS: "Delisted",
                 offtake: "Delisted",
+                avgOfftake: "Delisted",
                 inventoryDays: "Delisted",
+                oos: "", // ✅ blank for Delisted
                 harvestDates: sku.harvest || [],
                 harvestQuantities: sku.harvest || [],
-                expiryDates: sku.expiry || [], // ✅ NEW
-                expiryQuantities: sku.expiry || [], // ✅ NEW
+                expiryDates: sku.expiry || [],
+                expiryQuantities: sku.expiry || [],
               })
             );
 
@@ -642,9 +689,12 @@ export default function Inventory() {
         "Status",
         "Beginning",
         "Delivery",
+        "RTVNo",
         "RTV",
+        "RTVReason",
         "Ending",
         "Offtake",
+        "AvgOfftake",
         "OOS",
         "Harvest Dates",
         "Harvest Quantities",
@@ -659,34 +709,33 @@ export default function Inventory() {
         const harvestArray = Array.isArray(item.harvest) ? item.harvest : [];
         const expiryArray = Array.isArray(item.expiry) ? item.expiry : [];
 
-        // Format harvest data into multi-line strings
+        const formatDate = (d) => {
+          if (!d) return "";
+          const dateObj = new Date(d);
+          return isNaN(dateObj.getTime())
+            ? ""
+            : dateObj.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              });
+        };
+
+        // Harvest
         const harvestDates = harvestArray
-          .map((h) =>
-            new Date(h.date).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })
-          )
+          .map((h) => formatDate(h.date))
           .join("\n");
-
         const harvestQuantities = harvestArray
-          .map((h) => h.quantity)
+          .map((h) => (h.quantity ?? "").toString())
           .join("\n");
 
-        // Format expiry data into multi-line strings
+        // Expiry
         const expiryDates = expiryArray
-          .map((e) =>
-            new Date(e.date).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })
-          )
+          .map((e) => formatDate(e.date))
           .join("\n");
-
-        const expiryQuantities = expiryArray.map((e) => e.quantity).join("\n");
-
+        const expiryQuantities = expiryArray
+          .map((e) => (e.quantity ?? "").toString())
+          .join("\n");
         newData.push({
           "#": rowCount++,
           Date: item.date,
@@ -698,9 +747,12 @@ export default function Inventory() {
           Status: item.status,
           Beginning: item.beginning,
           Delivery: item.delivery,
+          RTVNo: item.RTVNo,
           RTV: item.RTV,
+          RTVReason: item.RTVReason,
           Ending: item.ending,
           Offtake: item.offtake,
+          AvgOfftake: item.avgOfftake || "",
           OOS: item.oos || "",
           "Harvest Dates": harvestDates,
           "Harvest Quantities": harvestQuantities,
