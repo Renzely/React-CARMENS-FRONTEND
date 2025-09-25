@@ -247,6 +247,19 @@ export default function Inventory() {
       headerClassName: "bold-header",
     },
     {
+      field: "adjustPlus",
+      headerName: "Adjust +",
+      width: 130,
+      headerClassName: "bold-header",
+    },
+    {
+      field: "adjustMinus",
+      headerName: "Adjust -",
+      width: 130,
+      headerClassName: "bold-header",
+    },
+
+    {
       field: "avgOfftake",
       headerName: "Avg. Offtake",
       width: 150,
@@ -319,7 +332,7 @@ export default function Inventory() {
     },
     {
       field: "expiryDates",
-      headerName: "Expiry",
+      headerName: "Near to Expired",
       width: 150,
       headerClassName: "bold-header",
       sortable: false,
@@ -391,16 +404,20 @@ export default function Inventory() {
               if (versionKey === "MVP") {
                 pushSku(sku, "Carried", {
                   category: versionKey,
-                  code: "—",
-                  beginningPCS: "—",
-                  deliveryPCS: "—",
-                  rtvNo: "—",
-                  rtvPCS: "—",
-                  rtvReason: "—",
-                  endingPCS: "—",
-                  offtake: "—",
-                  inventoryDays: "—",
+                  beginningPCS: sku.beginningPCS ?? 0,
+                  deliveryPCS: sku.deliveryPCS ?? 0,
+                  rtvNo: sku.rtvNo ?? "",
+                  rtvPCS: sku.rtvPCS ?? 0,
+                  rtvReason: sku.rtvReason ?? "",
+                  endingPCS: sku.endingPCS ?? 0,
+                  offtake: sku.offtake ?? 0,
+                  avgOfftake: sku.avgOfftake ?? "",
                   oos: normalizeOOS(sku.oos),
+
+                  adjustPlus: sku.adjustPlus ?? 0,
+                  adjustMinus: sku.adjustMinus ?? 0,
+
+                  inventoryDays: sku.inventoryDays ?? 0,
                   harvestDates: harvestClean,
                   harvestQuantities: harvestClean,
                   expiryDates: expiryClean,
@@ -418,6 +435,10 @@ export default function Inventory() {
                   offtake: sku.offtake ?? 0,
                   avgOfftake: sku.avgOfftake ?? "",
                   oos: normalizeOOS(sku.oos),
+
+                  adjustPlus: sku.adjustPlus ?? 0,
+                  adjustMinus: sku.adjustMinus ?? 0,
+
                   inventoryDays: sku.inventoryDays ?? 0,
                   harvestDates: harvestClean,
                   harvestQuantities: harvestClean,
@@ -438,6 +459,8 @@ export default function Inventory() {
                 rtvReason: "NC",
                 endingPCS: "NC",
                 offtake: "NC",
+                adjustPlus: "NC",
+                adjustMinus: "NC",
                 avgOfftake: "NC",
                 inventoryDays: "NC",
                 harvestDates: [],
@@ -589,6 +612,14 @@ export default function Inventory() {
                     sku.offtake === "" || sku.offtake == null
                       ? ""
                       : sku.offtake,
+                  adjustPlus:
+                    sku.adjustPlus === "" || sku.adjustPlus == null
+                      ? ""
+                      : sku.adjustPlus,
+                  adjustMinus:
+                    sku.adjustMinus === "" || sku.adjustMinus == null
+                      ? ""
+                      : sku.adjustMinus,
                   avgOfftake: sku.avgOfftake ?? "—", // ✅ use backend value
                   oos:
                     sku.oos === "" || sku.oos == null || sku.oos === 0
@@ -617,6 +648,8 @@ export default function Inventory() {
                 rtvReason: "NC",
                 endingPCS: "NC",
                 offtake: "NC",
+                adjustPlus: "NC",
+                adjustMinus: "NC",
                 avgOfftake: "NC",
                 inventoryDays: "NC",
                 oos: "", // ✅ blank for NC
@@ -635,6 +668,8 @@ export default function Inventory() {
                 rtvPCS: "Delisted",
                 endingPCS: "Delisted",
                 offtake: "Delisted",
+                adjustPlus: "Delisted",
+                adjustMinus: "Delisted",
                 avgOfftake: "Delisted",
                 inventoryDays: "Delisted",
                 oos: "", // ✅ blank for Delisted
@@ -696,10 +731,12 @@ export default function Inventory() {
         "Offtake",
         "AvgOfftake",
         "OOS",
+        "Adjust +", // ✅ new
+        "Adjust -", // ✅ new
         "Harvest Dates",
         "Harvest Quantities",
-        "Expiration Dates",
-        "Expiration Quantities",
+        "Near to Expired Dates",
+        "Near to Expired Quantities",
       ];
 
       let rowCount = 1;
@@ -736,6 +773,7 @@ export default function Inventory() {
         const expiryQuantities = expiryArray
           .map((e) => (e.quantity ?? "").toString())
           .join("\n");
+
         newData.push({
           "#": rowCount++,
           Date: item.date,
@@ -754,6 +792,11 @@ export default function Inventory() {
           Offtake: item.offtake,
           AvgOfftake: item.avgOfftake || "",
           OOS: item.oos || "",
+
+          // ✅ new fields
+          "Adjust +": item.adjustPlus ?? "",
+          "Adjust -": item.adjustMinus ?? "",
+
           "Harvest Dates": harvestDates,
           "Harvest Quantities": harvestQuantities,
           "Expiration Dates": expiryDates,
