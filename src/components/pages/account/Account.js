@@ -78,6 +78,7 @@ export default function Account() {
     "OPERATION HEAD",
     "COORDINATOR",
   ];
+  const isClient = roleAccount === "CLIENT  ";
   const isAllowed = allowedRoles.includes(roleAccount); // Check if role is allowed
 
   const handleOpenDialog = () => {
@@ -665,7 +666,7 @@ export default function Account() {
                     color: "white",
                   }}
                   onClick={onClick}
-                  disabled={!isAllowed}
+                  disabled={isClient || !isAllowed}
                 >
                   Active
                 </ColorButton>
@@ -678,7 +679,7 @@ export default function Account() {
                   size="small"
                   style={{ width: "50%", marginTop: "13px" }}
                   onClick={onClick}
-                  disabled={!isAllowed}
+                  disabled={isClient || !isAllowed}
                 >
                   Inactive
                 </Button>
@@ -697,12 +698,16 @@ export default function Account() {
       disableClickEventBubbling: true,
 
       renderCell: (params) => {
+        const roleAccount = localStorage.getItem("roleAccount");
+        const isClient = roleAccount === "CLIENT";
+
         const onClick = (e) => {
           let mFullname = params.row.firstName + " " + params.row.lastName;
           let condition = params.row.middleName;
           let mOutlet = params.row.outlet;
           let mEmail = params.row.emailAddress;
           let mPhone = params.row.contactNum;
+
           if (condition === "Null") {
             mFullname = params.row.firstName + " " + params.row.lastName;
           } else {
@@ -735,6 +740,7 @@ export default function Account() {
                 backgroundColor: "#987554",
                 color: "#FFFFF",
               }}
+              disabled={isClient} // 🔹 Disable for Client
             >
               <PersonIcon />
             </Button>
