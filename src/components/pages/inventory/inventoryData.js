@@ -167,6 +167,12 @@ export default function Inventory() {
       headerClassName: "bold-header",
     },
     {
+      field: "week",
+      headerName: "Week",
+      width: 80,
+      headerClassName: "bold-header",
+    },
+    {
       field: "merchandiser",
       headerName: "Merchandiser",
       width: 200,
@@ -392,6 +398,7 @@ export default function Inventory() {
                 sku: sku.sku,
                 skuCode: sku.skuCode,
                 code: sku.code || "",
+                week: rest.week ?? "",
                 ...values,
               });
             };
@@ -560,6 +567,7 @@ export default function Inventory() {
                 sku: sku.sku,
                 skuCode: sku.skuCode,
                 code: sku.code || "", // ✅ Include barcode
+                week: rest.week ?? "",
                 ...values,
               });
             };
@@ -716,6 +724,7 @@ export default function Inventory() {
       const headers = [
         "#",
         "Date",
+        "Week",
         "Fullname",
         "Outlet",
         "Category",
@@ -777,6 +786,7 @@ export default function Inventory() {
         newData.push({
           "#": rowCount++,
           Date: item.date,
+          Week: item.week,
           Fullname: item.fullname,
           Outlet: item.outlet,
           Category: item.category || "",
