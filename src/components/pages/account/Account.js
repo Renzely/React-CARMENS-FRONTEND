@@ -701,7 +701,7 @@ export default function Account() {
     "THE METRO GAISANO - LG GARDEN MACTAN",
     "TMP OPUS MALL",
     "TMP THE GROVE PASIG",
-  ]); //Outlets
+  ]);
 
   // State for the second modal
   const [openBranchModal, setOpenBranchModal] = React.useState(false);
