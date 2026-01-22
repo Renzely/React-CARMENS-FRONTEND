@@ -528,6 +528,7 @@ export default function Account() {
     "WALTERMART STA ROSA",
     "WALTERMART TAGAYTAY",
     "WALTERMART VISAYAS AVE.",
+    "WALTERMART SUCAT",
     "GAISANO BROTHERS - COUNTRY MALL",
     "GAISANO BROTHERS - MARKET SQUARE",
     "GAISANO CITIMALL BUHANGIN",
@@ -676,6 +677,7 @@ export default function Account() {
     "SM HYPERMARKET MOLINO",
     "SM HYPERMARKET MUNTINLUPA",
     "SM HYPERMARKET NAIC",
+    "SM HYPERMARKET NAIC 2",
     "SM HYPERMARKET PULILAN",
     "SM HYPERMARKET SUCAT",
     "SM HYPERMARKET SUCAT LOPEZ",
@@ -754,7 +756,7 @@ export default function Account() {
         {
           email: modalEmail,
           outlet: selectedBranches,
-        }
+        },
       );
 
       console.log("User branches updated:", response.data);
@@ -785,7 +787,7 @@ export default function Account() {
     if (!words || !Array.isArray(words)) return [];
 
     return words.map((word) =>
-      word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : ""
+      word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : "",
     );
   };
 
@@ -973,7 +975,7 @@ export default function Account() {
         .map((outlet) => outlet.trim());
 
       const response = await axios.post(
-        "https://api-carmens-best.bmphrc.com/get-all-user"
+        "https://api-carmens-best.bmphrc.com/get-all-user",
       );
       const data = response.data.data;
 
