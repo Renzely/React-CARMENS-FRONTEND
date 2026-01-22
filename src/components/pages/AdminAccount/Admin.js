@@ -103,7 +103,7 @@ export default function Admin() {
 
   const [adminSelectedRole, setSelectedRole] = React.useState("");
   const [adminSelectedMerchandiser, setAdminSelectedMerchandiser] = useState(
-    []
+    [],
   );
   const [adminSelectedBranch, setSelectedBranch] = useState([]);
   const [adminFirstName, setAdminFirstName] = React.useState("");
@@ -136,7 +136,7 @@ export default function Admin() {
 
   const [openBranchModal, setOpenBranchModal] = React.useState(false);
   const [selectedBranches, setSelectedBranches] = useState(
-    adminViewBranch || []
+    adminViewBranch || [],
   );
 
   const [modalEmail, setModalEmail] = React.useState("");
@@ -148,7 +148,7 @@ export default function Admin() {
         {
           emailAddress: email, // Use the passed email directly
           outlet: selectedBranches,
-        }
+        },
       );
 
       console.log("User branches updated:", response.data);
@@ -173,7 +173,7 @@ export default function Admin() {
     } catch (error) {
       console.error(
         "Error updating user branches:",
-        error.response?.data || error.message
+        error.response?.data || error.message,
       );
       handleCloseBranchModal();
     }
@@ -518,6 +518,7 @@ export default function Admin() {
     "SM HYPERMARKET MOLINO",
     "SM HYPERMARKET MONUMENTO",
     "SM HYPERMARKET NAIC",
+    "SM HYPERMARKET NAIC 2",
     "SM HYPERMARKET NORTH EDSA",
     "SM HYPERMARKET NOVALICHES",
     "SM HYPERMARKET PAMPANGA",
@@ -620,6 +621,7 @@ export default function Admin() {
     "WALTERMART STA ROSA",
     "WALTERMART TAGAYTAY",
     "WALTERMART VISAYAS AVE.",
+    "WALTERMART SUCAT",
     "GAISANO BROTHERS - COUNTRY MALL",
     "GAISANO BROTHERS - MARKET SQUARE",
     "GAISANO CITIMALL BUHANGIN",
@@ -952,7 +954,7 @@ export default function Admin() {
     try {
       // Extract emails
       const selectedEmails = adminSelectedMerchandiser.map(
-        (item) => item.emailAddress
+        (item) => item.emailAddress,
       );
 
       console.log("Selected emails:", selectedEmails);
@@ -971,7 +973,7 @@ export default function Admin() {
         "https://api-carmens-best.bmphrc.com/update-coor-details",
         {
           emails: selectedEmails,
-        }
+        },
       );
 
       if (response.status === 200) {
@@ -1151,7 +1153,7 @@ export default function Admin() {
   async function getUser() {
     try {
       const response = await axios.post(
-        "https://api-carmens-best.bmphrc.com/get-all-user"
+        "https://api-carmens-best.bmphrc.com/get-all-user",
       );
       const data = response.data.data;
 
@@ -1197,7 +1199,7 @@ export default function Admin() {
     try {
       const response = await axios.post(
         "https://api-carmens-best.bmphrc.com/get-admin-user",
-        requestBody
+        requestBody,
       );
       const data = response.data.data;
 
@@ -1227,7 +1229,7 @@ export default function Admin() {
     await axios
       .put(
         "https://api-carmens-best.bmphrc.com/update-admin-status",
-        requestBody
+        requestBody,
       )
       .then(async (response) => {
         const data = await response.data.data;
@@ -1315,7 +1317,7 @@ export default function Admin() {
       axios
         .post(
           "https://api-carmens-best.bmphrc.com/register-user-admin",
-          userDetails
+          userDetails,
         )
         .then(async (response) => {
           const data = response.data;
