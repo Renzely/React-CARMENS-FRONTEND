@@ -828,6 +828,11 @@ export default function Admin() {
     "NB RP METRO EAST",
     "PUREGOLD PPCI - ORTIGAS AVE. EXT.",
     "PUREGOLD PPCI -  CAULAUAN",
+    "WALTERMART MABALACAT",
+    "METRO ALABANG TOWN CENTE",
+    "METRO SOUTH ALABANG",
+    "RS LUCK CHINA TOWN",
+    "WALTERMART MALOLOS BULACAN",
   ];
 
   const handleRoleChange = (event) => {

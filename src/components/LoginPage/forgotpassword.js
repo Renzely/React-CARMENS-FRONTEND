@@ -57,7 +57,7 @@ export default function ForgotPassword() {
     try {
       const response = await axios.post(
         "https://api-carmens-best.bmphrc.com/send-otp-forgotpassword",
-        { emailAddress: emailAddress }
+        { emailAddress: emailAddress },
       );
       const res = response.data;
       if (res.status === 200) {
