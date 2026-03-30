@@ -147,7 +147,7 @@ export default function Inventory() {
             isValidDate(e?.date) &&
             e?.quantity !== "" &&
             e?.quantity !== null &&
-            e?.quantity !== undefined
+            e?.quantity !== undefined,
         )
       : [];
   const normalizeOOS = (v) =>
@@ -354,7 +354,7 @@ export default function Inventory() {
       .filter((e) => e.quantity > 0 && e.month !== "")
       .map(
         (e) =>
-          `${e.month} Month${e.month !== "1" ? "s" : ""} - Qty: ${e.quantity}`
+          `${e.month} Month${e.month !== "1" ? "s" : ""} - Qty: ${e.quantity}`,
       )
       .join(" || ");
   };
@@ -369,11 +369,11 @@ export default function Inventory() {
 
       const response = await axios.post(
         "https://api-carmens-best.bmphrc.com/retrieve-inventory-data",
-        { outlet }
+        { outlet },
       );
 
       const sortedData = response.data.data.sort(
-        (a, b) => new Date(b.date) - new Date(a.date)
+        (a, b) => new Date(b.date) - new Date(a.date),
       );
 
       let globalCount = 1;
@@ -474,7 +474,7 @@ export default function Inventory() {
                 harvestQuantities: [],
                 expiryDates: [],
                 expiryQuantities: [],
-              })
+              }),
             );
 
             // Delisted
@@ -491,11 +491,11 @@ export default function Inventory() {
                 harvestQuantities: [],
                 expiryDates: [],
                 expiryQuantities: [],
-              })
+              }),
             );
 
             return result;
-          }
+          },
         );
       });
 
@@ -534,7 +534,7 @@ export default function Inventory() {
     try {
       const response = await axios.post(
         "https://api-carmens-best.bmphrc.com/filter-date-range",
-        data
+        data,
       );
 
       const inventories = response.data.data;
@@ -542,7 +542,7 @@ export default function Inventory() {
 
       // Sort by date descending
       const sortedData = inventories.sort(
-        (a, b) => new Date(b.date) - new Date(a.date)
+        (a, b) => new Date(b.date) - new Date(a.date),
       );
 
       let globalCount = 1;
@@ -665,7 +665,7 @@ export default function Inventory() {
                 harvestQuantities: sku.harvest || [],
                 expiryDates: sku.expiry || [],
                 expiryQuantities: sku.expiry || [],
-              })
+              }),
             );
 
             versionData.Delisted?.forEach((sku) =>
@@ -685,11 +685,11 @@ export default function Inventory() {
                 harvestQuantities: sku.harvest || [],
                 expiryDates: sku.expiry || [],
                 expiryQuantities: sku.expiry || [],
-              })
+              }),
             );
 
             return result;
-          }
+          },
         );
       });
 
@@ -718,7 +718,7 @@ export default function Inventory() {
         {
           start: bDate,
           end: eDate,
-        }
+        },
       );
 
       const headers = [
@@ -769,20 +769,24 @@ export default function Inventory() {
 
         // Harvest
         const harvestDates = harvestArray
+          .filter((h) => h && h.date) // ✅ prevent null
           .map((h) => formatDate(h.date))
           .join("\n");
+
         const harvestQuantities = harvestArray
+          .filter((h) => h && h.quantity !== undefined)
           .map((h) => (h.quantity ?? "").toString())
           .join("\n");
-
         // Expiry
         const expiryDates = expiryArray
+          .filter((e) => e && e.date)
           .map((e) => formatDate(e.date))
           .join("\n");
+
         const expiryQuantities = expiryArray
+          .filter((e) => e && e.quantity !== undefined)
           .map((e) => (e.quantity ?? "").toString())
           .join("\n");
-
         newData.push({
           "#": rowCount++,
           Date: item.date,
@@ -828,7 +832,7 @@ export default function Inventory() {
       const colWidths = headers.map((header) => {
         const maxLength = Math.max(
           header.length,
-          ...newData.map((row) => (row[header] || "").toString().length)
+          ...newData.map((row) => (row[header] || "").toString().length),
         );
         return { wch: maxLength + 4 };
       });

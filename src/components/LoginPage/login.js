@@ -50,7 +50,7 @@ export default function Login() {
     try {
       const response = await axios.post(
         "https://api-carmens-best.bmphrc.com/login-admin",
-        body
+        body,
       );
       const data = await response.data;
 
