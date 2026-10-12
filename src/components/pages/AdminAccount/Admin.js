@@ -837,6 +837,10 @@ export default function Admin() {
     "GAISANO GRAND FIESTAMALL TABUNOK",
     "GAISANO GRAND MINGLANILLA",
     "GAISANO GRAND JAI ALAI",
+    "TMP Vista Mall Antipolo",
+    "TMP Molito",
+    "TMP Evia",
+    "RS Antipolo",
   ];
 
   const handleRoleChange = (event) => {

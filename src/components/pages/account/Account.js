@@ -745,6 +745,10 @@ export default function Account() {
     "GAISANO GRAND FIESTAMALL TABUNOK",
     "GAISANO GRAND MINGLANILLA",
     "GAISANO GRAND JAI ALAI",
+    "TMP Vista Mall Antipolo",
+    "TMP Molito",
+    "TMP Evia",
+    "RS Antipolo",
   ]);
 
   // State for the second modal
